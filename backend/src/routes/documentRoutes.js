@@ -3,11 +3,14 @@ import multer from 'multer';
 import path from 'path';
 import crypto from 'crypto';
 import fs from 'fs/promises';
+import { fileURLToPath } from 'url';
 import { parseDocument, toStructuredDocument } from '../services/documentParser.js';
 import { saveDocument, listDocuments, getDocumentById, updateDocumentById } from '../services/storageService.js';
 
 const router = express.Router();
-const uploadDir = path.resolve('backend/uploads');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadDir = path.join(__dirname, '..', 'uploads');
 const upload = multer({ dest: uploadDir });
 
 router.post('/upload-document', upload.single('document'), async (req, res) => {
