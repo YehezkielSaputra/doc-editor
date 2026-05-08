@@ -12,7 +12,6 @@ export default function App() {
   const loadDocs = async () => {
     const { data } = await api.get('/document-files');
     setDocs(data);
-    if (data.length && !active) setActive(data[0]);
   };
 
   useEffect(() => {

@@ -15,7 +15,7 @@ import TableCell from '@tiptap/extension-table-cell';
 import { useEffect } from 'react';
 import html2pdf from 'html2pdf.js';
 
-const blank = '<h1>Lorem ipsum</h1><h2>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc ac faucibus odio.</h2><p>Mulai menulis di sini...</p>';
+const blank = '<p></p>';
 
 export default function EditorPane({ doc, onSave, status }) {
   const content = doc?.contentHtml || doc?.structured?.content_blocks?.map((b) => (b.type === 'heading' ? `<h2>${b.text}</h2>` : `<p>${b.text}</p>`)).join('') || blank;
@@ -43,6 +43,31 @@ export default function EditorPane({ doc, onSave, status }) {
     if (editor) editor.commands.setContent(content);
   }, [content, editor]);
 
+  if (!doc) {
+    return (
+      <section className='editor-shell'>
+        <div className='top-toolbar empty-tools'>
+          <button className='tool' title='Daftar dokumen'>📄</button>
+          <button className='tool' disabled>↩️</button>
+          <button className='tool' disabled>↪️</button>
+          <button className='tool' disabled>➕</button>
+          <button className='tool' disabled>✏️</button>
+          <button className='tool' disabled>✍️</button>
+          <button className='tool' disabled>🖍️</button>
+          <button className='tool' disabled>🧽</button>
+          <button className='tool' disabled>🖼️</button>
+          <button className='tool' disabled>🔗</button>
+          <button className='tool' disabled>📝</button>
+          <button className='tool' disabled>🔎</button>
+        </div>
+        <div className='status'>{status}</div>
+        <div className='page-canvas empty-canvas'>
+          <div className='empty-state'>Belum ada dokumen. Silakan upload lalu pilih file untuk mulai edit.</div>
+        </div>
+      </section>
+    );
+  }
+
   if (!editor) return null;
 
   const addImage = () => {
@@ -55,21 +80,52 @@ export default function EditorPane({ doc, onSave, status }) {
     html2pdf().set({ margin: 10, filename: `${doc?.name || 'document'}.pdf` }).from(el).save();
   };
 
+  const addLink = () => {
+    const previousUrl = editor.getAttributes('link').href;
+    const url = window.prompt('Masukkan URL tautan:', previousUrl || 'https://');
+    if (url === null) return;
+    if (url === '') {
+      editor.chain().focus().unsetLink().run();
+      return;
+    }
+    editor.chain().focus().setLink({ href: url }).run();
+  };
+
+  const searchText = () => {
+    const query = window.prompt('Cari teks:');
+    if (!query) return;
+    const full = editor.state.doc.textBetween(0, editor.state.doc.content.size, '\n');
+    const index = full.toLowerCase().indexOf(query.toLowerCase());
+    if (index < 0) {
+      window.alert('Teks tidak ditemukan.');
+      return;
+    }
+    editor.chain().focus().setTextSelection({ from: index + 1, to: index + query.length + 1 }).run();
+  };
+
+  const addSignature = () => {
+    editor.chain().focus().insertContent('<p>✍️ Ditandatangani oleh pengguna</p>').run();
+  };
+
+  const addNote = () => {
+    editor.chain().focus().insertContent('<blockquote>📝 Catatan: </blockquote>').run();
+  };
+
   return (
     <section className='editor-shell'>
       <div className='top-toolbar'>
-        <button className='tool active'>Thumbnails</button>
-        <button className='tool'>Undo</button>
-        <button className='tool'>Redo</button>
-        <button className='tool active'>Add text</button>
-        <button className='tool'>Edit text</button>
-        <button className='tool'>Sign</button>
-        <button className='tool'>Draw</button>
-        <button className='tool'>Eraser</button>
-        <button className='tool'>Image</button>
-        <button className='tool'>Link</button>
-        <button className='tool'>Note</button>
-        <button className='tool'>Search</button>
+        <button className='tool' title='Daftar dokumen'>📄</button>
+        <button className='tool' title='Undo' onClick={() => editor.chain().focus().undo().run()}>↩️</button>
+        <button className='tool' title='Redo' onClick={() => editor.chain().focus().redo().run()}>↪️</button>
+        <button className='tool' title='Tambah teks' onClick={() => editor.chain().focus().insertContent('<p>Teks baru...</p>').run()}>➕</button>
+        <button className='tool' title='Edit teks' onClick={() => editor.chain().focus().run()}>✏️</button>
+        <button className='tool' title='Tanda tangan' onClick={addSignature}>✍️</button>
+        <button className='tool' title='Sorot (draw)' onClick={() => editor.chain().focus().toggleHighlight().run()}>🖍️</button>
+        <button className='tool' title='Hapus format highlight' onClick={() => editor.chain().focus().unsetHighlight().run()}>🧽</button>
+        <button className='tool' title='Tambah gambar' onClick={addImage}>🖼️</button>
+        <button className='tool' title='Tambah/Hapus tautan' onClick={addLink}>🔗</button>
+        <button className='tool' title='Tambah catatan' onClick={addNote}>📝</button>
+        <button className='tool' title='Cari teks' onClick={searchText}>🔎</button>
       </div>
       <div className='sub-toolbar'>
         <button onClick={() => editor.chain().focus().toggleBold().run()}>B</button>

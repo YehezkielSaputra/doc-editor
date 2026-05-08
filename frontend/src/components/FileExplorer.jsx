@@ -1,9 +1,9 @@
 export default function FileExplorer({ docs, onUpload, onSelect, activeId }) {
   return (
     <aside className='thumbs'>
-      <div className='thumb-header'>Thumbnails</div>
+      <div className='thumb-header'>📚</div>
       <label className='upload-tile'>
-        Import file
+        ⬆️
         <input type='file' accept='.pdf,.docx,.txt' onChange={(e) => onUpload(e.target.files[0])} />
       </label>
       <div className='thumb-list'>
