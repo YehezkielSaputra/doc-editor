@@ -48,9 +48,8 @@ export default function App() {
     const hasPdfUrl = activeDoc.pdfUrl || activeDoc.fileUrl || activeDoc.url || activeDoc.downloadUrl;
     if (hasPdfUrl) return activeDoc;
 
-    const backendPdfPath = activeDoc.filePath || activeDoc.path || activeDoc.storagePath;
-    if (backendPdfPath) {
-      return { ...activeDoc, pdfUrl: `${api.defaults.baseURL}${backendPdfPath.startsWith('/') ? '' : '/'}${backendPdfPath}` };
+    if (activeDoc.fileUrl) {
+      return { ...activeDoc, pdfUrl: `${api.defaults.baseURL}${activeDoc.fileUrl}` };
     }
 
     if (activeDoc.id && activeDoc.name?.toLowerCase().endsWith('.pdf')) {
