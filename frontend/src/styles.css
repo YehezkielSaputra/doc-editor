@@ -60,29 +60,24 @@ button, input { font: inherit; }
   background: #cfd7e4;
 }
 
-.ProseMirror {
-  width: 794px;
-  min-height: 1123px;
-  margin: 0 auto;
-  padding: 60px;
+.pdf-page {
+  position: relative;
+  margin: 0 auto 28px;
   background: #fff;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15);
+}
+
+.pdf-line-block {
+  position: absolute;
+  padding: 2px 4px;
   outline: none;
+  border: 1px solid transparent;
+  line-height: 1.2;
+  white-space: pre-wrap;
 }
 
-.ProseMirror p,
-.ProseMirror li {
-  font-size: 16px;
-  line-height: 1.6;
-}
-
-.ProseMirror h2 {
-  font-size: 24px;
-  margin: 20px 0 14px;
-}
-
-.ProseMirror section + section {
-  border-top: 1px dashed #d1d5db;
-  margin-top: 28px;
-  padding-top: 28px;
+.pdf-line-block:hover,
+.pdf-line-block:focus {
+  border-color: #60a5fa;
+  background: rgba(191, 219, 254, 0.22);
 }

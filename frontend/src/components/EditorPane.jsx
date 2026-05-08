@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import SimpleEditor from './SimpleEditor';
-import { importPdfToHtml } from './PdfImporter';
+import { importPdfLayout } from './PdfImporter';
 import { exportEditorToPdf } from './exportPdf';
+import PdfLayoutEditor from './PdfLayoutEditor';
 
 export default function EditorPane() {
   const [title, setTitle] = useState('Imported Document');
-  const [content, setContent] = useState('<p>Upload a PDF to start editing.</p>');
+  const [content, setContent] = useState('');
+  const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const handleImport = async (event) => {
@@ -14,8 +15,8 @@ export default function EditorPane() {
 
     setLoading(true);
     try {
-      const html = await importPdfToHtml(file);
-      setContent(html || '<p></p>');
+      const layoutPages = await importPdfLayout(file);
+      setPages(layoutPages);
       setTitle(file.name.replace(/\.pdf$/i, '') || 'Imported Document');
     } finally {
       setLoading(false);
@@ -38,8 +39,9 @@ export default function EditorPane() {
         />
         <button className='tool' onClick={() => exportEditorToPdf({ title })}>Export PDF</button>
       </div>
-      {loading ? <div className='status'>Parsing PDF pages...</div> : <div className='status'>Ready</div>}
-      <SimpleEditor content={content} onSave={setContent} />
+      {loading ? <div className='status'>Extracting PDF layout (text + posisi)...</div> : <div className='status'>Ready</div>}
+      <PdfLayoutEditor pages={pages} onSave={setContent} />
+      <input type='hidden' value={content} readOnly />
     </section>
   );
 }
