@@ -28,7 +28,7 @@ button { font: inherit; }
   color: #2b2f36;
   padding: 14px;
   border-radius: 6px;
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 600;
   margin-bottom: 12px;
 }
@@ -39,7 +39,8 @@ button { font: inherit; }
   border: 1px dashed #b8bfcc;
   padding: 10px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 28px;
+  text-align: center;
   margin-bottom: 16px;
 }
 
@@ -100,6 +101,17 @@ button { font: inherit; }
   white-space: nowrap;
 }
 
+.top-toolbar .tool {
+  min-width: 42px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.top-toolbar .tool:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .top-toolbar .tool.active { background: #efdccf; border-color: #e2cebf; }
 
 .status {
@@ -115,6 +127,19 @@ button { font: inherit; }
   overflow: auto;
   padding: 20px;
   background: #d7dce5;
+}
+
+.empty-canvas {
+  display: grid;
+  place-items: center;
+}
+
+.empty-state {
+  color: #5a667b;
+  background: #eef2f8;
+  border: 1px dashed #b4bece;
+  padding: 18px 22px;
+  border-radius: 10px;
 }
 
 .ProseMirror {
