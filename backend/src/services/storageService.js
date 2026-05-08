@@ -12,10 +12,15 @@ async function readDb() {
   }
 }
 
+async function writeDb(data) {
+  await fs.mkdir(path.dirname(dbPath), { recursive: true });
+  await fs.writeFile(dbPath, JSON.stringify(data, null, 2));
+}
+
 export async function saveDocument(doc) {
   const all = await readDb();
   all.unshift(doc);
-  await fs.writeFile(dbPath, JSON.stringify(all, null, 2));
+  await writeDb(all);
 }
 
 export async function listDocuments() {
@@ -25,4 +30,13 @@ export async function listDocuments() {
 export async function getDocumentById(id) {
   const all = await readDb();
   return all.find((x) => x.id === id);
+}
+
+export async function updateDocumentById(id, patch) {
+  const all = await readDb();
+  const idx = all.findIndex((x) => x.id === id);
+  if (idx < 0) return null;
+  all[idx] = { ...all[idx], ...patch };
+  await writeDb(all);
+  return all[idx];
 }

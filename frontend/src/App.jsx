@@ -1,35 +1,50 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import api from './services/api';
 import FileExplorer from './components/FileExplorer';
 import EditorPane from './components/EditorPane';
-import ChatPane from './components/ChatPane';
 import './styles.css';
 
 export default function App() {
   const [docs, setDocs] = useState([]);
   const [active, setActive] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [status, setStatus] = useState('Ready');
 
-  const loadDocs = async () => { const { data } = await api.get('/document-files'); setDocs(data); };
-  useEffect(() => { loadDocs(); }, []);
+  const loadDocs = async () => {
+    const { data } = await api.get('/document-files');
+    setDocs(data);
+    if (data.length && !active) setActive(data[0]);
+  };
+
+  useEffect(() => {
+    loadDocs();
+  }, []);
 
   const upload = async (file) => {
-    const fd = new FormData(); fd.append('document', file);
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('document', file);
+    setStatus('Importing document...');
     const { data } = await api.post('/upload-document', fd);
-    setActive(data); await loadDocs();
+    setActive(data);
+    await loadDocs();
+    setStatus(`Loaded ${data.name}`);
   };
 
-  const analyzeText = async (text) => {
-    const { data } = await api.post('/analyze-text', { text });
-    setMessages((m) => [...m, { role: 'assistant', text: data.output }]);
-  };
-
-  const ask = async (question) => {
+  const saveDocument = async (payload) => {
     if (!active) return;
-    setMessages((m) => [...m, { role: 'user', text: question }, { role: 'assistant', text: '...' }]);
-    const { data } = await api.post('/chat', { id: active.id, question });
-    setMessages((m) => [...m.slice(0, -1), { role: 'assistant', text: data.output }]);
+    setStatus('Saving...');
+    const { data } = await api.put(`/documents/${active.id}`, payload);
+    setActive(data);
+    await loadDocs();
+    setStatus(`Saved at ${new Date().toLocaleTimeString()}`);
   };
 
-  return <main className='layout'><FileExplorer docs={docs} onUpload={upload} onSelect={setActive} activeId={active?.id} /><EditorPane doc={active} onAnalyzeText={analyzeText} /><ChatPane onAsk={ask} messages={messages} /></main>;
+  const activeDoc = useMemo(() => docs.find((x) => x.id === active?.id) || active, [docs, active]);
+
+  return (
+    <main className='layout'>
+      <FileExplorer docs={docs} onUpload={upload} onSelect={setActive} activeId={active?.id} />
+      <EditorPane doc={activeDoc} onSave={saveDocument} status={status} />
+    </main>
+  );
 }

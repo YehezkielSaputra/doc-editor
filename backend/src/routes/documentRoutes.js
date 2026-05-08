@@ -3,8 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import crypto from 'crypto';
 import { parseDocument, toStructuredDocument } from '../services/documentParser.js';
-import { analyzeTextWithGemini, chatWithGemini } from '../services/aiService.js';
-import { saveDocument, listDocuments, getDocumentById } from '../services/storageService.js';
+import { saveDocument, listDocuments, getDocumentById, updateDocumentById } from '../services/storageService.js';
 
 const router = express.Router();
 const upload = multer({ dest: path.resolve('backend/uploads') });
@@ -21,9 +20,10 @@ router.post('/upload-document', upload.single('document'), async (req, res) => {
       mimeType: req.file.mimetype,
       path: req.file.path,
       rawText,
+      contentHtml: structured.content_blocks.map((b) => (b.type === 'heading' ? `<h2>${b.text}</h2>` : `<p>${b.text}</p>`)).join(''),
       structured,
       createdAt: new Date().toISOString(),
-      ai: null
+      updatedAt: new Date().toISOString()
     };
     await saveDocument(record);
     res.json(record);
@@ -32,35 +32,16 @@ router.post('/upload-document', upload.single('document'), async (req, res) => {
   }
 });
 
-router.post('/analyze-document', async (req, res) => {
+router.put('/documents/:id', async (req, res) => {
   try {
-    const { id } = req.body;
-    const doc = await getDocumentById(id);
-    if (!doc) return res.status(404).json({ error: 'Document not found' });
-    const ai = await analyzeTextWithGemini(doc.rawText.slice(0, 50000));
-    res.json(ai);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+    const updated = await updateDocumentById(req.params.id, {
+      contentHtml: req.body.contentHtml,
+      rawText: req.body.rawText,
+      updatedAt: new Date().toISOString()
+    });
 
-router.post('/analyze-text', async (req, res) => {
-  try {
-    const { text } = req.body;
-    const ai = await analyzeTextWithGemini(text || '');
-    res.json(ai);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-router.post('/chat', async (req, res) => {
-  try {
-    const { id, question } = req.body;
-    const doc = await getDocumentById(id);
-    if (!doc) return res.status(404).json({ error: 'Document not found' });
-    const answer = await chatWithGemini(question, doc.rawText.slice(0, 50000));
-    res.json(answer);
+    if (!updated) return res.status(404).json({ error: 'Document not found' });
+    res.json(updated);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -68,7 +49,13 @@ router.post('/chat', async (req, res) => {
 
 router.get('/document-files', async (_, res) => {
   const docs = await listDocuments();
-  res.json(docs.map(({ rawText, ...rest }) => rest));
+  res.json(docs);
+});
+
+router.get('/documents/:id', async (req, res) => {
+  const doc = await getDocumentById(req.params.id);
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+  res.json(doc);
 });
 
 export default router;
