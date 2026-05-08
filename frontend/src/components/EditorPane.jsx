@@ -15,7 +15,7 @@ import TableCell from '@tiptap/extension-table-cell';
 import { useEffect } from 'react';
 import html2pdf from 'html2pdf.js';
 
-const blank = '<h1>Dokumen Baru</h1><p>Mulai menulis di sini...</p>';
+const blank = '<h1>Lorem ipsum</h1><h2>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc ac faucibus odio.</h2><p>Mulai menulis di sini...</p>';
 
 export default function EditorPane({ doc, onSave, status }) {
   const content = doc?.contentHtml || doc?.structured?.content_blocks?.map((b) => (b.type === 'heading' ? `<h2>${b.text}</h2>` : `<p>${b.text}</p>`)).join('') || blank;
@@ -39,7 +39,9 @@ export default function EditorPane({ doc, onSave, status }) {
     content
   });
 
-  useEffect(() => { if (editor) editor.commands.setContent(content); }, [content, editor]);
+  useEffect(() => {
+    if (editor) editor.commands.setContent(content);
+  }, [content, editor]);
 
   if (!editor) return null;
 
@@ -53,21 +55,39 @@ export default function EditorPane({ doc, onSave, status }) {
     html2pdf().set({ margin: 10, filename: `${doc?.name || 'document'}.pdf` }).from(el).save();
   };
 
-  return <section className='panel center'>
-    <div className='toolbar'>
-      <button onClick={() => editor.chain().focus().toggleBold().run()}>Bold</button>
-      <button onClick={() => editor.chain().focus().toggleItalic().run()}>Italic</button>
-      <button onClick={() => editor.chain().focus().toggleUnderline().run()}>Underline</button>
-      <button onClick={() => editor.chain().focus().toggleHighlight().run()}>Highlight</button>
-      <button onClick={() => editor.chain().focus().setTextAlign('left').run()}>Left</button>
-      <button onClick={() => editor.chain().focus().setTextAlign('center').run()}>Center</button>
-      <button onClick={() => editor.chain().focus().setTextAlign('right').run()}>Right</button>
-      <button onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>Table</button>
-      <button onClick={addImage}>Insert Image</button>
-      <button onClick={exportPdf}>Export PDF</button>
-      <button onClick={() => onSave({ contentHtml: editor.getHTML(), rawText: editor.getText() })}>Save</button>
-    </div>
-    <div className='status'>{status}</div>
-    <EditorContent editor={editor} />
-  </section>;
+  return (
+    <section className='editor-shell'>
+      <div className='top-toolbar'>
+        <button className='tool active'>Thumbnails</button>
+        <button className='tool'>Undo</button>
+        <button className='tool'>Redo</button>
+        <button className='tool active'>Add text</button>
+        <button className='tool'>Edit text</button>
+        <button className='tool'>Sign</button>
+        <button className='tool'>Draw</button>
+        <button className='tool'>Eraser</button>
+        <button className='tool'>Image</button>
+        <button className='tool'>Link</button>
+        <button className='tool'>Note</button>
+        <button className='tool'>Search</button>
+      </div>
+      <div className='sub-toolbar'>
+        <button onClick={() => editor.chain().focus().toggleBold().run()}>B</button>
+        <button onClick={() => editor.chain().focus().toggleItalic().run()}>I</button>
+        <button onClick={() => editor.chain().focus().toggleUnderline().run()}>U</button>
+        <button onClick={() => editor.chain().focus().setTextAlign('left').run()}>Left</button>
+        <button onClick={() => editor.chain().focus().setTextAlign('center').run()}>Center</button>
+        <button onClick={() => editor.chain().focus().setTextAlign('right').run()}>Right</button>
+        <button onClick={() => editor.chain().focus().toggleHighlight().run()}>Highlight</button>
+        <button onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>Table</button>
+        <button onClick={addImage}>Image</button>
+        <button onClick={exportPdf}>Export</button>
+        <button onClick={() => onSave({ contentHtml: editor.getHTML(), rawText: editor.getText() })}>Save</button>
+      </div>
+      <div className='status'>{status}</div>
+      <div className='page-canvas'>
+        <EditorContent editor={editor} />
+      </div>
+    </section>
+  );
 }
