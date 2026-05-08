@@ -1,17 +1,24 @@
-# Local Document Management + AI Editing App
+# Word / PDF Editor (Microsoft Word-like)
 
-## Stack
-- Backend: Node.js + Express + multer + pdf-parse + mammoth
-- Frontend: React + Vite + TipTap
-- AI: Gemini 2.5 Flash Lite via REST API
+Aplikasi ini dirombak menjadi editor dokumen bergaya Microsoft Word berbasis web (gratis) menggunakan **TipTap** (open-source).
 
-## Run locally
+## Fitur utama
+- Import file `.docx`, `.pdf`, dan `.txt`.
+- Editor WYSIWYG dengan toolbar: bold, italic, underline, highlight, alignment.
+- Insert image via URL.
+- Insert table.
+- Simpan hasil edit ke backend.
+- Export dokumen ke PDF.
 
+## Teknologi
+- Frontend: React + Vite + TipTap + html2pdf.js
+- Backend: Node.js + Express + pdf-parse + mammoth
+
+## Menjalankan
 ### Backend
 ```bash
 cd backend
 npm install
-cp .env.example .env
 npm run dev
 ```
 
@@ -22,11 +29,11 @@ npm install
 npm run dev
 ```
 
-Backend runs on `http://localhost:4000`, frontend on `http://localhost:5173`.
+Backend: `http://localhost:4000`
+Frontend: `http://localhost:5173`
 
-## API routes
-- `POST /upload-document`
-- `POST /analyze-document`
-- `POST /analyze-text`
-- `POST /chat`
-- `GET /document-files`
+## API
+- `POST /upload-document` - import file
+- `GET /document-files` - list dokumen
+- `GET /documents/:id` - detail dokumen
+- `PUT /documents/:id` - simpan perubahan editor
