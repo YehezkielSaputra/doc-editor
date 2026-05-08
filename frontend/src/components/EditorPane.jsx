@@ -18,6 +18,8 @@ import html2pdf from 'html2pdf.js';
 const blank = '<p></p>';
 
 export default function EditorPane({ doc, onSave, status }) {
+  const pdfUrl = doc?.pdfUrl || doc?.fileUrl || doc?.url || doc?.downloadUrl || null;
+  const isPdf = Boolean(doc?.name?.toLowerCase().endsWith('.pdf')) && Boolean(pdfUrl);
   const content = doc?.contentHtml || doc?.structured?.content_blocks?.map((b) => (b.type === 'heading' ? `<h2>${b.text}</h2>` : `<p>${b.text}</p>`)).join('') || blank;
 
   const editor = useEditor({
@@ -63,6 +65,21 @@ export default function EditorPane({ doc, onSave, status }) {
         <div className='status'>{status}</div>
         <div className='page-canvas empty-canvas'>
           <div className='empty-state'>Belum ada dokumen. Silakan upload lalu pilih file untuk mulai edit.</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (isPdf) {
+    return (
+      <section className='editor-shell'>
+        <div className='status'>{status}</div>
+        <div className='page-canvas pdf-canvas'>
+          <iframe
+            className='pdf-viewer'
+            src={pdfUrl}
+            title={doc.name || 'PDF Viewer'}
+          />
         </div>
       </section>
     );

@@ -24,7 +24,11 @@ export default function App() {
     fd.append('document', file);
     setStatus('Importing document...');
     const { data } = await api.post('/upload-document', fd);
-    setActive(data);
+    const uploaded = { ...data };
+    if (file.type === 'application/pdf') {
+      uploaded.pdfUrl = URL.createObjectURL(file);
+    }
+    setActive(uploaded);
     await loadDocs();
     setStatus(`Loaded ${data.name}`);
   };
@@ -39,11 +43,27 @@ export default function App() {
   };
 
   const activeDoc = useMemo(() => docs.find((x) => x.id === active?.id) || active, [docs, active]);
+  const resolvedActiveDoc = useMemo(() => {
+    if (!activeDoc) return null;
+    const hasPdfUrl = activeDoc.pdfUrl || activeDoc.fileUrl || activeDoc.url || activeDoc.downloadUrl;
+    if (hasPdfUrl) return activeDoc;
+
+    const backendPdfPath = activeDoc.filePath || activeDoc.path || activeDoc.storagePath;
+    if (backendPdfPath) {
+      return { ...activeDoc, pdfUrl: `${api.defaults.baseURL}${backendPdfPath.startsWith('/') ? '' : '/'}${backendPdfPath}` };
+    }
+
+    if (activeDoc.id && activeDoc.name?.toLowerCase().endsWith('.pdf')) {
+      return { ...activeDoc, pdfUrl: `${api.defaults.baseURL}/documents/${activeDoc.id}/file` };
+    }
+
+    return activeDoc;
+  }, [activeDoc]);
 
   return (
     <main className='app-shell'>
       <FileExplorer docs={docs} onUpload={upload} onSelect={setActive} activeId={active?.id} />
-      <EditorPane doc={activeDoc} onSave={saveDocument} status={status} />
+      <EditorPane doc={resolvedActiveDoc} onSave={saveDocument} status={status} />
     </main>
   );
 }
