@@ -45,11 +45,17 @@ export default function App() {
   const activeDoc = useMemo(() => docs.find((x) => x.id === active?.id) || active, [docs, active]);
   const resolvedActiveDoc = useMemo(() => {
     if (!activeDoc) return null;
-    const hasPdfUrl = activeDoc.pdfUrl || activeDoc.fileUrl || activeDoc.url || activeDoc.downloadUrl;
-    if (hasPdfUrl) return activeDoc;
 
-    if (activeDoc.fileUrl) {
-      return { ...activeDoc, pdfUrl: `${api.defaults.baseURL}${activeDoc.fileUrl}` };
+    const toAbsoluteUrl = (value) => {
+      if (!value) return null;
+      if (value.startsWith('blob:') || /^https?:\/\//i.test(value)) return value;
+      return `${api.defaults.baseURL}${value.startsWith('/') ? '' : '/'}${value}`;
+    };
+
+    const resolvedPdfUrl = toAbsoluteUrl(activeDoc.pdfUrl || activeDoc.fileUrl || activeDoc.url || activeDoc.downloadUrl);
+
+    if (resolvedPdfUrl) {
+      return { ...activeDoc, pdfUrl: resolvedPdfUrl };
     }
 
     if (activeDoc.id && activeDoc.name?.toLowerCase().endsWith('.pdf')) {
