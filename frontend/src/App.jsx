@@ -42,7 +42,7 @@ export default function App() {
   const activeDoc = useMemo(() => docs.find((x) => x.id === active?.id) || active, [docs, active]);
 
   return (
-    <main className='layout'>
+    <main className='app-shell'>
       <FileExplorer docs={docs} onUpload={upload} onSelect={setActive} activeId={active?.id} />
       <EditorPane doc={activeDoc} onSave={saveDocument} status={status} />
     </main>
